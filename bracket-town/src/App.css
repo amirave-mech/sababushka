@@ -79,6 +79,14 @@
   color: white;
   border-color: transparent;
   font-weight: 500;
+
+  transition: all 0.2s ease-out;
+}
+
+.puzzle-submit:disabled {
+  /* background-color: rgb(25, 71, 156); */
+  opacity: 70%;
+  /* transform: scale(90%); */
 }
 
 .puzzle {
@@ -97,6 +105,16 @@
   font-family: var(--mono-font);
   font-size: 1.5rem;
   word-spacing: -0.1em;
+}
+
+.guess-wrong {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid red;
+  border-radius: var(--border-radius);
+  padding: 0.5em 1em;
+  /* font-weight: 500; */
+  color: rgb(150, 0, 0);
+  text-align: center;
 }
 
 .highlight {
