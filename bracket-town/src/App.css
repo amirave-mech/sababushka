@@ -52,43 +52,6 @@
   overflow: hidden;
 }
 
-.input-container {
-  /* height: 4em; */
-  display: flex;
-  flex-direction: row;
-  gap: 0.5em;
-}
-
-.puzzle-submit, .puzzle-input {
-  border-radius: var(--border-radius);
-  border: 1px solid grey;
-  padding: 0.75em 1.5em;
-  font-size: 1em;
-  font-family: inherit;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-
-.puzzle-input {
-  flex: 1;
-}
-
-.puzzle-submit {
-  background-color: rgb(33, 96, 214);
-  color: white;
-  border-color: transparent;
-  font-weight: 500;
-
-  transition: all 0.2s ease-out;
-}
-
-.puzzle-submit:disabled {
-  /* background-color: rgb(25, 71, 156); */
-  opacity: 70%;
-  /* transform: scale(90%); */
-}
-
 .puzzle {
   flex: 1 1 auto;
   background-color: whitesmoke;
@@ -109,7 +72,7 @@
 
 .guess-wrong {
   background-color: rgba(255, 0, 0, 0.1);
-  border: 1px solid red;
+  /* border: 1px solid red; */
   border-radius: var(--border-radius);
   padding: 0.5em 1em;
   /* font-weight: 500; */
@@ -133,7 +96,7 @@
 }
 
 .highlight {
-  background-color: rgba(255, 255, 0, 0.3);
+  background-color: rgba(255, 255, 0, 0.2);
   padding: 3px 3px;
   margin: -3px -3px;
   /* padding: .125rem .25rem; */
@@ -144,12 +107,27 @@
 }
 
 .highlight.hint {
-  background-color: rgba(255, 187, 0, 0.3);
+  background-color: rgba(255, 187, 0, 0.2);
 }
 
 .correct {
-  background-color: rgba(0, 255, 0, 0.3);
+  background-color: rgba(0, 255, 0, 0.2);
   padding: 3px 0px;
   margin: -3px 0px;
   border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  #root {
+    padding: 0;
+  }
+
+  .puzzle-container {
+    border: none;
+    border-radius: 0;
+  }
+
+  .puzzle {
+    font-size: 1.25rem;
+  }
 }
