@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 
 class Bracket {
     isInner: boolean = false;
@@ -34,12 +34,12 @@ class Bracket {
     toDom() {
         let dom: (string | React.ReactNode)[] = [];
 
-        this.content.forEach(elem => {
+        this.content.forEach((elem, i) => {
             if (elem instanceof Bracket)
                 if (elem.isInner)
-                    dom.push(<span className="highlight"> [{elem.toDom()}] </span>);
+                    dom.push(<span className='highlight' key={i}> [{elem.toDom()}] </span>);
                 else
-                    dom.push(<>[{elem.toDom()}]</>)
+                    dom.push(<Fragment key={i}>[{elem.toDom()}]</Fragment>)
             else
                 dom.push(elem);
         });

@@ -1,52 +1,93 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100dvh;
+  width: 100vw;
+  padding: 1em;
+  box-sizing: border-box;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
+.puzzle-container {
+  height: 100%;
+  max-width: 42rem;
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  /* gap: 3rem; */
+  /* padding: 1em; */
+  margin: 0px auto;
+  
+  border: 1px solid rgb(136, 139, 143);
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+}
+
+.puzzle-header {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  flex-direction: row;
+  gap: 1rem;
+
+  padding: 1.5em;
+  border-bottom: 1px solid grey;
+}
+
+.puzzle-header h1 {
+  font-size: 2.5em;
+  line-height: 1.1;
+  margin: 0px 0px 0.5rem;
+}
+
+.puzzle-header p {
+  font-size: 1.2em;
+  line-height: 1;
+  margin: 0px 0px 0.5rem;
+}
+
+.puzzle-content {
+  flex: 1 1 auto;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.input-container {
+  /* height: 4em; */
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+}
+
+.puzzle-submit, .puzzle-input {
+  border-radius: var(--border-radius);
+  border: 1px solid grey;
+  padding: 0.75em 1.5em;
+  font-size: 1em;
+  font-family: inherit;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+.puzzle-input {
+  flex: 1;
+}
+
+.puzzle-submit {
+  background-color: rgb(33, 96, 214);
+  color: white;
+  border-color: transparent;
+  font-weight: 500;
 }
 
 .puzzle {
+  flex: 1 1 auto;
   background-color: whitesmoke;
   padding: 1em;
   text-align: start;
+
+  overflow-y: auto;
 
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -58,14 +99,12 @@
   word-spacing: -0.1em;
 }
 
-.read-the-docs {
-  color: #888;
-}
-
 .highlight {
   background-color: rgba(255, 255, 0, 0.3);
   padding: 3px 0px;
   margin: -3px -3px;
+  /* padding: .125rem .25rem; */
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -73,4 +112,5 @@
   background-color: rgba(0, 255, 0, 0.3);
   padding: 3px 0px;
   margin: -3px 0px;
+  border-radius: 4px;
 }
