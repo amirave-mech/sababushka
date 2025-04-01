@@ -1,12 +1,21 @@
+import { ReactNode } from "react";
+
 class Bracket {
     isInner: boolean = false;
-    content: (string | Bracket)[] = [];
+    content: (string | Bracket | ReactNode)[] = [];
     answer: string | undefined = '';
+    parent: Bracket| null;
 
-    constructor(isInner: boolean, content: (string | Bracket)[], answer: string | undefined) {
-        this.isInner = isInner;
+    constructor(content: (string | Bracket)[], answer: string | undefined) {
         this.content = content;
         this.answer = answer;
+        this.parent = null;
+        
+        this.recalculateIsInner();
+    }
+
+    setParent(parent: Bracket) {
+        this.parent = parent;
     }
 
     toText() {
@@ -38,12 +47,49 @@ class Bracket {
         return dom;
     }
 
+    getAllInners(): Bracket[] {
+        if (this.isInner)
+            return [this];
+
+        let inners: Bracket[] = [];
+
+        for (let i = 0; i < this.content.length; i++) {
+            const elem = this.content[i];
+
+            if (!(elem instanceof Bracket))
+                continue;
+
+            inners = inners.concat(elem.getAllInners());
+        }
+
+        return inners;
+    }
+
+    collapse() {
+        if (!this.parent)
+            throw new Error(`Parent empty in bracket ${this.toText()}`);
+
+        const index = this.parent.content.indexOf(this);
+        this.parent.content[index] = (<span className="correct">{this.answer}</span>)
+
+        this.parent.recalculateIsInner();
+    }
+
+    recalculateIsInner() {
+        let isInner = true;
+        
+        this.content.forEach(elem => {
+            if (elem instanceof Bracket)
+                isInner = false;
+        });
+
+        this.isInner = isInner;
+    }
+
     static create(text: string, thisAnswer: string | undefined = undefined): Bracket {
         let accum = '';
-        let bracketCount = 0;
-        let hasBrackets = false;
-        let inAnswer = false;
         let answer = undefined;
+        let bracketCount = 0;
 
         let content: (string | Bracket)[] = [];
 
@@ -60,9 +106,9 @@ class Bracket {
                 bracketCount--;
 
                 if (bracketCount == 0) {
-                    if (!answer)
-                        throw new Error(`Bracket ${text} is missing an answer`)
-                    
+                    if (answer === undefined)
+                        throw new Error(`Bracket ${accum} does not have an answer`);
+
                     content.push(Bracket.create(accum, answer))
                     accum = '';
                     content.push('');
@@ -75,31 +121,32 @@ class Bracket {
                     accum += ch;
 
                 bracketCount++;
-                hasBrackets = true;
+            }
+            else if (ch === '|' && bracketCount == 1) {
+                if (answer != undefined)
+                    throw new Error(`Multiple answers in bracket ${text}`);
+
+                answer = accum;
+                accum = '';
             }
             else {
                 // If in bracket, added to accum, else add to last content
                 if (bracketCount > 0) {
                     accum += ch;
-                }
-                else if (inAnswer) {
-                    if (ch === '>') {
-                        inAnswer = false;
-                    } else {
-                        answer += ch;
-                    }
                 } else {
-                    if (ch === '<') {
-                        inAnswer = true;
-                        answer = '';
-                    } else {
-                        content[content.length - 1] += ch;
-                    }
+                    content[content.length - 1] += ch;
                 }
             }
         }
 
-        return new Bracket(!hasBrackets, content, thisAnswer);
+        const finalBracket = new Bracket(content, thisAnswer);
+        
+        content.forEach(elem => {
+            if (elem instanceof Bracket)
+                elem.setParent(finalBracket);
+        })
+
+        return finalBracket;
     }
 }
 

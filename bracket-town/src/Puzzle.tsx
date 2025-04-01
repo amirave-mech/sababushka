@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
+import { forwardRef, ReactNode, useEffect, useImperativeHandle, useState } from "react"
 import Bracket from "./Bracket";
 
 interface PuzzleProps { puzzleKey: string }
@@ -7,70 +7,47 @@ interface PuzzleRefHandle {
 }
 
 const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey }: PuzzleProps, ref: any) => {
-    const [puzzleDom, setPuzzleDom] = useState([]);
+    const [puzzleDom, setPuzzleDom] = useState<ReactNode[]>([]);
+    const [bracket, setBracket] = useState<Bracket|null>(null);
     // const [curText, setCurText] = useState('');
 
     useEffect(() => {
         // const text = getHtmlFromText(puzzleKey);
         console.log(puzzleKey)
-        console.log(Bracket.create(puzzleKey, undefined));
-        // @ts-ignore
-        setPuzzleDom([Bracket.create(puzzleKey).toDom()]);
+        const newBracket = Bracket.create(puzzleKey);
+        setBracket(newBracket);
+        console.log(newBracket);
+
+        setPuzzleDom([newBracket.toDom()]);
 
     }, [puzzleKey]);
 
-    useImperativeHandle(ref, () => {
+    useImperativeHandle(ref, () => ({
         submitAnswer
-    });
+    }));
 
     const submitAnswer = (answer: string): boolean => {
-        return false;
-    }
+        if (!bracket)
+            throw new Error(`Cannot submit answer when bracket is null!`);
 
-    const getHtmlFromText = (str: string) => {
-        let text = [];
-        let accum = '';
-        let curInner = false;
+        const inners = bracket.getAllInners();
 
-        // let innerTexts
-
-        for (let i = 0; i < str.length; i++) {
-            let ch = str.charAt(i);
-
-            if (ch === '\[') {
-                text.push(accum);
-                accum = '[';
-                curInner = true;
-            }
-            else if (ch === '\]') {
-                if (curInner) {
-                    accum += ']'
-                    text.push(<span className="highlight"> {accum} </span>);
-                    accum = ''
-                    curInner = false;
-                } else {
-                    text.push(accum);
-                    accum = ']';
-                }
-            }
-            else {
-                accum += ch;
+        for (let i = 0; i < inners.length; i++) {
+            const cur = inners[i];
+            if (cur.answer === answer) {
+                cur.collapse();
+                setPuzzleDom(bracket.toDom());
+                return true;
             }
         }
 
-        text.push(accum);
-
-        // @ts-ignore
-        setPuzzleDom(text);
-        // setCurText(puzzleKey);
-
-        return text;
+        return false;
     }
 
     return (
-        <>
+        <div className='puzzle'>
             {puzzleDom}
-        </>
+        </div>
     );
 });
 

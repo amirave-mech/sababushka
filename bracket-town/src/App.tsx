@@ -11,21 +11,21 @@ function App() {
   }
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    // alert('submit ' + state.value);
-    const result = puzzleRef.current?.submitAnswer(state.value) ?? false;
-    alert(result);
+    const result = puzzleRef.current.submitAnswer(state.value);
+    console.log(result);
+    setState({value: ''});
     event.preventDefault();
   }
 
   return (
     <>
-      <h1>[עיר הסוגרים]</h1>
       <div className="card">
-        <p>{state.value}</p>
-        <Puzzle ref={puzzleRef} puzzleKey='A<first>[testy t<second>[THIS IS TEST] blauwg] sdfsdf<third>[blin<fourth>[sdf]]sdf'></Puzzle>
+        <h1>[עיר הסוגרים]</h1>
+        {/* <p>{state.value}</p> */}
+        <Puzzle ref={puzzleRef} puzzleKey='[דרך|___ א[גב|לתקוע סכין שם משמעותו לבגוד]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס, לדוגמה] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חווה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק היה מטפל בך באמצעות הקזת דם]]ה'></Puzzle>
         <form onSubmit={onSubmit}>
-          <input type='text' name='answer' onChange={onInputChange} />
-          <input type="submit" value="Submit" />
+          <input type='text' name='answer' value={state.value} onChange={onInputChange} />
+          <input type="submit" value="הגש" />
         </form>
       </div>
       <p className="read-the-docs">
