@@ -13,9 +13,9 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey }: PuzzlePr
     useEffect(() => {
         // const text = getHtmlFromText(puzzleKey);
         console.log(puzzleKey)
-        console.log(Bracket.create(puzzleKey));
+        console.log(Bracket.create(puzzleKey, undefined));
         // @ts-ignore
-        setPuzzleDom([Bracket.create(puzzleKey).serialize()]);
+        setPuzzleDom([Bracket.create(puzzleKey).toDom()]);
 
     }, [puzzleKey]);
 

@@ -1,20 +1,20 @@
 class Bracket {
     isInner: boolean = false;
     content: (string | Bracket)[] = [];
-    answer: string = '';
+    answer: string | undefined = '';
 
-    constructor(isInner: boolean, content: (string | Bracket)[], answer: string) {
+    constructor(isInner: boolean, content: (string | Bracket)[], answer: string | undefined) {
         this.isInner = isInner;
         this.content = content;
         this.answer = answer;
     }
 
-    serialize() {
+    toText() {
         let text = '';
 
         this.content.forEach(elem => {
             if (elem instanceof Bracket)
-                text += `[${elem.serialize()}]`;
+                text += `[${elem.toText()}]`;
             else
                 text += elem;
         });
@@ -22,15 +22,33 @@ class Bracket {
         return text;
     }
 
-    static create(text: string): Bracket {
+    toDom() {
+        let dom: (string | React.ReactNode)[] = [];
+
+        this.content.forEach(elem => {
+            if (elem instanceof Bracket)
+                if (elem.isInner)
+                    dom.push(<span className="highlight"> [{elem.toDom()}] </span>);
+                else
+                    dom.push(<>[{elem.toDom()}]</>)
+            else
+                dom.push(elem);
+        });
+
+        return dom;
+    }
+
+    static create(text: string, thisAnswer: string | undefined = undefined): Bracket {
         let accum = '';
         let bracketCount = 0;
         let hasBrackets = false;
+        let inAnswer = false;
+        let answer = undefined;
 
         let content: (string | Bracket)[] = [];
 
         content.push('');
-        
+
         for (let i = 0; i < text.length; i++) {
             let ch = text.charAt(i);
 
@@ -42,9 +60,13 @@ class Bracket {
                 bracketCount--;
 
                 if (bracketCount == 0) {
-                    content.push(Bracket.create(accum))
+                    if (!answer)
+                        throw new Error(`Bracket ${text} is missing an answer`)
+                    
+                    content.push(Bracket.create(accum, answer))
                     accum = '';
                     content.push('');
+                    answer = undefined;
                 }
             }
             // If opening bracket, mark as not inner
@@ -57,18 +79,28 @@ class Bracket {
             }
             else {
                 // If in bracket, added to accum, else add to last content
-                if (bracketCount > 0) {  
+                if (bracketCount > 0) {
                     accum += ch;
                 }
-                else {
-                    content[content.length - 1] += ch;
+                else if (inAnswer) {
+                    if (ch === '>') {
+                        inAnswer = false;
+                    } else {
+                        answer += ch;
+                    }
+                } else {
+                    if (ch === '<') {
+                        inAnswer = true;
+                        answer = '';
+                    } else {
+                        content[content.length - 1] += ch;
+                    }
                 }
             }
         }
 
-        return new Bracket(!hasBrackets, content);
+        return new Bracket(!hasBrackets, content, thisAnswer);
     }
-
 }
 
 export default Bracket;
