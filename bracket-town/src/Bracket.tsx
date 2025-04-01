@@ -1,15 +1,17 @@
 import { Fragment, ReactNode } from "react";
 
 class Bracket {
-    isInner: boolean = false;
-    content: (string | Bracket | ReactNode)[] = [];
-    answer: string | undefined = '';
+    content: (string | Bracket | ReactNode)[];
+    answer: string | undefined;
     parent: Bracket| null;
+    isInner: boolean = false;
+    hintUsed: boolean;
 
     constructor(content: (string | Bracket)[], answer: string | undefined) {
         this.content = content;
         this.answer = answer;
         this.parent = null;
+        this.hintUsed = false;
         
         this.recalculateIsInner();
     }
@@ -31,18 +33,24 @@ class Bracket {
         return text;
     }
 
-    toDom() {
+    toDom(getHint: (bracket: Bracket) => void) {
         let dom: (string | React.ReactNode)[] = [];
 
         this.content.forEach((elem, i) => {
             if (elem instanceof Bracket)
-                if (elem.isInner)
-                    dom.push(<span className='highlight' key={i}> [{elem.toDom()}] </span>);
-                else
-                    dom.push(<Fragment key={i}>[{elem.toDom()}]</Fragment>)
+                if (elem.isInner) {
+                    const className = 'highlight' + (elem.hintUsed ? ' hint' : '');
+                    dom.push(<span className={className} key={i} onClick={_ => getHint(elem)}>[{elem.toDom(getHint)}]</span>);
+                }
+                else {
+                    dom.push(<Fragment key={i}>[{elem.toDom(getHint)}]</Fragment>)
+                }
             else
                 dom.push(elem);
         });
+
+        if (this.hintUsed)
+            dom.push(` (${this.answer?.charAt(0)})`)
 
         return dom;
     }
@@ -73,6 +81,16 @@ class Bracket {
         this.parent.content[index] = (<span className="correct">{this.answer}</span>)
 
         this.parent.recalculateIsInner();
+    }
+
+    revealLetter() {
+        if (this.hintUsed)
+            return;
+
+        this.hintUsed = true;
+        // // Add the first letter to the dom
+        // this.content.push(` (${this.answer?.charAt(0)})`)
+        // console.log(this.content);
     }
 
     recalculateIsInner() {

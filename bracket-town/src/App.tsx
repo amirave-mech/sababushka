@@ -15,10 +15,18 @@ function App() {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const result = puzzleRef.current.submitAnswer(state.value);
     // console.log(result);
-    if (result === false)
+    if (result === false) {
+      // TODO subtract score
       toastRef.current.showError('טעות! הניחוש לא תואם אף אחד מהסוגרים.')
+    }
+
     setState({ value: '' });
     event.preventDefault();
+  }
+
+  const onRequestHint = () => {
+    // TODO subtract score
+    return true;
   }
 
   return (
@@ -30,7 +38,7 @@ function App() {
         </div>
         {/* <p>{state.value}</p> */}
         <div className='puzzle-content'>
-        <Puzzle ref={puzzleRef} puzzleKey='[דרך|___ א[גב|לתקוע סכין במקום זה משמעותו לבגוד]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס, לדוגמה] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חווה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק היה מטפל בך באמצעות הקזת דם]]ה'></Puzzle>
+        <Puzzle ref={puzzleRef} requestHint={onRequestHint} puzzleKey='[דרך|___ א[גב|לתקוע סכין במקום זה משמעותו לבגוד]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס, לדוגמה] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חווה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק אחד היה מטפל בך באמצעות הקזת דם]]ה'></Puzzle>
         <Toast ref={toastRef}></Toast>
         <form className='input-container' onSubmit={onSubmit}>
           <input className='puzzle-input' type='text' name='answer' placeholder='הקלד את הניחוש שלך...' value={state.value} onChange={onInputChange} />
