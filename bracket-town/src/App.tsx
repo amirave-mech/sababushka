@@ -12,8 +12,8 @@ const PUZZLES = [
 ]
 
 const CONFETTI_PROPS = {
-  intialVelocityX: 3000,
-  intialVelocityY: 300000,
+  // initialVelocityX: 3000,
+  // initialVelocityY: 300000,
   friction: 0.995,
   gravity: 0.5,
   recycle: false,
@@ -23,15 +23,12 @@ const CONFETTI_PROPS = {
 }
 
 function App() {
-  const [isComplete, setIsComplete] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-
   const [pageIndex, setPageIndex] = useState(0);
   const [runConfetti, setRunConfetti] = useState(false);
 
   const handleFinish = (score: number) => {
-    setFinalScore(score);
-    setIsComplete(true);
+    // setFinalScore(score);
+    // setIsComplete(true);
 
     setRunConfetti(true);
     setTimeout(() => {
@@ -53,11 +50,11 @@ function App() {
       <div className='puzzle-header'>
         <h1>[סבבושקה]</h1>
         <div className='pagination'>
-          <button className='pagination-arrow' onClick={_ => movePage(pageIndex - 1)}>→</button>
+          <button className='pagination-arrow' onClick={_ => movePage(pageIndex - 1)}>{'<'}</button>
           {PUZZLES.map((_puzzleKey, i) => {
             return (<span className={'pagination-dot' + (i === pageIndex ? ' active' : '')}>•</span>);
           })}
-          <button className='pagination-arrow' onClick={_ => movePage(pageIndex + 1)}>←</button>
+          <button className='pagination-arrow' onClick={_ => movePage(pageIndex + 1)}>{'>'}</button>
         </div>
       </div>
       <PuzzleContainer

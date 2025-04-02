@@ -6,6 +6,7 @@ class Bracket {
     parent: Bracket| null;
     isInner: boolean = false;
     hintUsed: boolean;
+    isSolved: any;
 
     constructor(content: (string | Bracket)[], answer: string | undefined) {
         this.content = content;
@@ -38,7 +39,10 @@ class Bracket {
 
         this.content.forEach((elem, i) => {
             if (elem instanceof Bracket)
-                if (elem.isInner) {
+                if (elem.isSolved) {
+                    dom.push((<span key={i} className="correct">{elem.answer}</span>))
+                }
+                else if (elem.isInner) {
                     const className = 'highlight' + (elem.hintUsed ? ' hint' : '');
                     dom.push(<span className={className} key={i} onClick={_ => getHint(elem)}>[{elem.toDom(getHint)}]</span>);
                 }
@@ -77,9 +81,10 @@ class Bracket {
         if (!this.parent)
             throw new Error(`Parent empty in bracket ${this.toText()}`);
 
-        const index = this.parent.content.indexOf(this);
-        this.parent.content[index] = (<span className="correct">{this.answer}</span>)
+        // const index = this.parent.content.indexOf(this);
+        // this.parent.content[index] = (<span className="correct">{this.answer}</span>)
 
+        this.isSolved = true;
         this.parent.recalculateIsInner();
     }
 
@@ -97,7 +102,7 @@ class Bracket {
         let isInner = true;
         
         this.content.forEach(elem => {
-            if (elem instanceof Bracket)
+            if (elem instanceof Bracket && !elem.isSolved)
                 isInner = false;
         });
 

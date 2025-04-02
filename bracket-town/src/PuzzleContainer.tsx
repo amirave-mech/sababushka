@@ -11,19 +11,21 @@ interface PuzzleComponentProps {
 
 function PuzzleContainer({ puzzleKey, isTutorial, onFinish }: PuzzleComponentProps) {
   const [score, setScore] = useState(100);
+  const [isFinished, setIsFinished] = useState(false);
 
   const puzzleRef = useRef<any>(null);
   const toastRef = useRef<any>(null);
 
   const onSubmit = (text: string) => {
-    const [correct, isFinished] = puzzleRef.current.submitAnswer(text);
+    const [correct, isNowFinished] = puzzleRef.current.submitAnswer(text);
 
     if (correct === false) {
       setScore((score) => score - 2);
       toastRef.current.showError('טעות! הניחוש לא תואם אף אחד מהסוגרים.');
     }
 
-    if (isFinished) {
+    if (isNowFinished) {
+      setIsFinished(true);
       onFinish(score);
     }
   };
@@ -48,9 +50,7 @@ function PuzzleContainer({ puzzleKey, isTutorial, onFinish }: PuzzleComponentPro
         puzzleKey={puzzleKey}
       />
       <Toast ref={toastRef} />
-      <div className='mobile-keyboard'>
-        <PuzzleInput onSubmit={onSubmit} />
-      </div>
+      <PuzzleInput onSubmit={onSubmit} />
     </div>
   );
 }

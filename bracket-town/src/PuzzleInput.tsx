@@ -62,6 +62,7 @@ const PuzzleInput: React.FC<PuzzleInputProps> = ({
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value)}
                     ref={inputRef}
                     readOnly={mobileMode}
+                    autoComplete='off'
                 />
                 <button className='puzzle-submit' disabled={(text ? false : true)}>שלח</button>
             </form>
