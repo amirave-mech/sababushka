@@ -1,9 +1,9 @@
-import { Fragment, ReactNode } from "react";
+import { ReactNode } from "react";
 
 class Bracket {
     content: (string | Bracket | ReactNode)[];
     answer: string | undefined;
-    parent: Bracket| null;
+    parent: Bracket | null;
     isInner: boolean = false;
     hintUsed: boolean;
     isSolved: any;
@@ -13,7 +13,7 @@ class Bracket {
         this.answer = answer;
         this.parent = null;
         this.hintUsed = false;
-        
+
         this.recalculateIsInner();
     }
 
@@ -34,20 +34,25 @@ class Bracket {
         return text;
     }
 
-    toDom(getHint: (bracket: Bracket) => void) {
+    toDom(getHint: (bracket: Bracket) => void, lastAnswer: string | null) {
         let dom: (string | React.ReactNode)[] = [];
 
         this.content.forEach((elem, i) => {
             if (elem instanceof Bracket)
                 if (elem.isSolved) {
-                    dom.push((<span key={i} className="bracket correct">{elem.answer}</span>))
+                    const className = 'bracket' + (lastAnswer === elem.answer ? ' correct' : '');
+                    dom.push((<span key={i} className={className}>{elem.answer}</span>))
                 }
                 else if (elem.isInner) {
                     const className = 'bracket ' + (elem.hintUsed ? 'hint' : 'highlight');
-                    dom.push(<span className={className} key={i} onClick={_ => getHint(elem)}>[{elem.toDom(getHint)}]</span>);
+                    dom.push(
+                        <span className={className} key={i} onClick={_ => getHint(elem)}>
+                            [{elem.toDom(getHint, lastAnswer)}]
+                        </span>
+                    );
                 }
                 else {
-                    dom.push(<span key={i} className='bracket regular'>[{elem.toDom(getHint)}]</span>)
+                    dom.push(<span key={i} className='bracket regular'>[{elem.toDom(getHint, lastAnswer)}]</span>)
                 }
             else
                 dom.push(elem);
@@ -100,7 +105,7 @@ class Bracket {
 
     recalculateIsInner() {
         let isInner = true;
-        
+
         this.content.forEach(elem => {
             if (elem instanceof Bracket && !elem.isSolved)
                 isInner = false;
@@ -163,7 +168,7 @@ class Bracket {
         }
 
         const finalBracket = new Bracket(content, thisAnswer);
-        
+
         content.forEach(elem => {
             if (elem instanceof Bracket)
                 elem.setParent(finalBracket);

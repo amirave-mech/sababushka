@@ -10,6 +10,7 @@ interface PuzzleRefHandle {
 
 const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHint, onFinish }: PuzzleProps, ref: any) => {
     const [puzzleDom, setPuzzleDom] = useState<ReactNode[]>([]);
+    const [lastAnswer, setLastAnswer] = useState<string|null>(null);
     const rootBracket = useRef<Bracket | null>(null);
     const setRootBracket = (newRootBracket: Bracket) => { rootBracket.current = newRootBracket };
     // const [curText, setCurText] = useState('');
@@ -29,7 +30,7 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
                 return;
 
             bracket.revealLetter();
-            setPuzzleDom(rootBracket.current.toDom(getHint));
+            setPuzzleDom(rootBracket.current.toDom(getHint, lastAnswer));
         }
         else if (!bracket.isSolved) {
             const isSure = confirm('לגלות את כל המילה?')
@@ -50,7 +51,7 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
         setRootBracket(newBracket);
         console.log(newBracket);
 
-        setPuzzleDom(newBracket.toDom(getHint));
+        setPuzzleDom(newBracket.toDom(getHint, lastAnswer));
     }, [puzzleKey]);
 
     useImperativeHandle(ref, () => ({
@@ -67,7 +68,6 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
             const bracket = inners[i];
             if (bracket.answer === answer) {
                 revealBracket(bracket);
-
                 return true;
             }
         }
@@ -80,7 +80,8 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
             throw new Error(`Cannot submit answer when bracket is null!`);
         
         bracket.collapse();
-        setPuzzleDom(rootBracket.current.toDom(getHint));
+        setLastAnswer(bracket.answer!);
+        setPuzzleDom(rootBracket.current.toDom(getHint, bracket.answer!));
 
         setTimeout(() => {
             const isFinished = rootBracket.current!.isInner;
