@@ -1,51 +1,74 @@
-import { useRef, useState } from 'react'
-import './App.css'
-import Puzzle from './Puzzle';
-import Toast from './Toast';
-import PuzzleInput from './PuzzleInput';
+import { useState } from 'react';
+import './App.css';
+import PuzzleContainer from './PuzzleContainer';
+import ReactConfetti from 'react-confetti';
+
+const PUZZLES = [
+  'ברוך ה[בא|___ בימים (מאוד זקן)]!',
+  '[דרך|___ א[גב|לתקוע סכין במקום הזה שקול לבגידה]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חוה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק אחד היה מטפל בך באמצעות הקזת דם]]ה',
+  '',
+  '',
+  '',
+]
+
+const CONFETTI_PROPS = {
+  intialVelocityX: 3000,
+  intialVelocityY: 300000,
+  friction: 0.995,
+  gravity: 0.5,
+  recycle: false,
+  numberOfPieces: 100,
+  tweenDuration: 500,
+  // confettiSource: {x: window.innerWidth / 2, y: 0, w: window., h: 0}
+}
 
 function App() {
-  const [score, setScore] = useState(100);
+  const [isComplete, setIsComplete] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const puzzleRef = useRef<any>(null);
-  const toastRef = useRef<any>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [runConfetti, setRunConfetti] = useState(false);
 
-  const onSubmit = (text: string) => {
-    const result = puzzleRef.current.submitAnswer(text);
-    // console.log(result);
-    if (result === false) {
-      setScore((score) => score - 2);
-      toastRef.current.showError('טעות! הניחוש לא תואם אף אחד מהסוגרים.')
-    }
-  }
+  const handleFinish = (score: number) => {
+    setFinalScore(score);
+    setIsComplete(true);
 
-  const onRequestHint = () => {
-    setScore((score) => score - 15);
-    return true;
+    setRunConfetti(true);
+    setTimeout(() => {
+      setRunConfetti(false);
+    }, 5000);
+  };
+
+  const movePage = (newIndex: number) => {
+    if (newIndex < 0)
+      newIndex = 0;
+    if (newIndex >= PUZZLES.length)
+      newIndex = PUZZLES.length;
+
+    setPageIndex(newIndex);
   }
 
   return (
-    <>
-      <div className='puzzle-container'>
-        <div className='puzzle-header'>
-          <h1>[סבבושקה]</h1>
-          {/* <p>מאת אמיר רווה</p> */}
-        </div>
-        {/* <p>{state.value}</p> */}
-        <div className='puzzle-content'>
-          <div className='puzzle-score'>
-            <label>ניקוד: {score}/100</label>
-            <progress value={score} max='100'>{score}%</progress>
-          </div>
-          <Puzzle ref={puzzleRef} requestHint={onRequestHint} puzzleKey='[דרך|___ א[גב|לתקוע סכין במקום זה משמעותו לבגוד]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס, לדוגמה] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חווה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק אחד היה מטפל בך באמצעות הקזת דם]]ה'></Puzzle>
-          <Toast ref={toastRef}></Toast>
-          <div className='mobile-keyboard'>
-            <PuzzleInput onSubmit={onSubmit}></PuzzleInput>
-          </div>
+    <div className='puzzle-container'>
+      <div className='puzzle-header'>
+        <h1>[סבבושקה]</h1>
+        <div className='pagination'>
+          <button className='pagination-arrow' onClick={_ => movePage(pageIndex - 1)}>→</button>
+          {PUZZLES.map((_puzzleKey, i) => {
+            return (<span className={'pagination-dot' + (i === pageIndex ? ' active' : '')}>•</span>);
+          })}
+          <button className='pagination-arrow' onClick={_ => movePage(pageIndex + 1)}>←</button>
         </div>
       </div>
-    </>
-  )
+      <PuzzleContainer
+        key={pageIndex}
+        puzzleKey={PUZZLES[pageIndex]}
+        isTutorial={pageIndex === 0}
+        onFinish={handleFinish}
+      />
+      {runConfetti && <ReactConfetti width={window.innerWidth} height={window.innerHeight} {...CONFETTI_PROPS}/>}
+    </div>
+  );
 }
 
-export default App
+export default App;

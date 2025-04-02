@@ -14,7 +14,7 @@
   /* gap: 3rem; */
   /* padding: 1em; */
   margin: 0px auto;
-  
+
   border: 1px solid rgb(136, 139, 143);
   border-radius: var(--border-radius);
   box-sizing: border-box;
@@ -22,13 +22,41 @@
 
 .puzzle-header {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
-  flex-direction: row;
-  gap: 1rem;
+  flex-direction: column;
+  /* gap: 1rem; */
 
   padding: 1.5em;
   border-bottom: 1px solid grey;
+}
+
+.pagination {
+  display: flex;
+  flex-direction: row;
+  cursor: default;
+  user-select: none;
+
+  gap: 0.25em;
+}
+
+.pagination-arrow {
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+
+  /* for visual alignment */
+  transform: translateY(2px);
+}
+
+.pagination-dot {
+  color: grey;
+  /* font-size: ; */
+}
+
+.pagination-dot.active {
+  color: black;
 }
 
 .puzzle-header h1 {
@@ -57,6 +85,7 @@
   background-color: whitesmoke;
   padding: 1em;
   text-align: start;
+  border-radius: var(--border-radius);
 
   overflow-y: auto;
 
@@ -115,6 +144,15 @@
   padding: 3px 0px;
   margin: -3px 0px;
   border-radius: 4px;
+}
+
+.puzzle-tutorial {
+  background-color: rgba(0, 255, 85, 0.1);
+  border-radius: var(--border-radius);
+  padding: 1em 1em;
+  color: rgb(0, 150, 85);
+  text-align: center;
+  /* font-size: 0.75rem; */
 }
 
 @media (max-width: 640px) {

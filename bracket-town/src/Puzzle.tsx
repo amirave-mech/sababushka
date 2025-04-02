@@ -37,14 +37,14 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
         setRootBracket(newBracket);
         console.log(newBracket);
     
-        setPuzzleDom([newBracket.toDom(getHint)]);
+        setPuzzleDom(newBracket.toDom(getHint));
     }, [puzzleKey]);
 
     useImperativeHandle(ref, () => ({
         submitAnswer
     }));
 
-    const submitAnswer = (answer: string): boolean => {
+    const submitAnswer = (answer: string): [boolean, boolean] => {
         if (!rootBracket.current)
             throw new Error(`Cannot submit answer when bracket is null!`);
 
@@ -55,11 +55,12 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
             if (bracket.answer === answer) {
                 bracket.collapse();
                 setPuzzleDom(rootBracket.current.toDom(getHint));
-                return true;
+                const isFinished = rootBracket.current.isInner;
+                return [true, isFinished];
             }
         }
 
-        return false;
+        return [false, false];
     }
 
     return (

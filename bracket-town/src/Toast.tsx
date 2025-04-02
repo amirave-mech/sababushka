@@ -6,7 +6,7 @@ interface ToastState {
     timeoutId: number | null
 }
 
-const TOAST_DURATION = 3000;
+const TOAST_DURATION = 5000;
 
 const Toast = forwardRef((_props, ref) => {
     const [state, setState] = useState<ToastState>({ show: false, msg: '', timeoutId: null })
