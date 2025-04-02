@@ -17,23 +17,29 @@ function PuzzleContainer({ puzzleKey, isTutorial, onFinish }: PuzzleComponentPro
   const toastRef = useRef<any>(null);
 
   const onSubmit = (text: string) => {
-    const [correct, isNowFinished] = puzzleRef.current.submitAnswer(text);
+    const correct = puzzleRef.current.submitAnswer(text);
 
     if (correct === false) {
-      setScore((score) => score - 2);
+      setScore((score) => Math.max(score - 2, 0));
       toastRef.current.showError('טעות! הניחוש לא תואם אף אחד מהסוגרים.');
     }
-
-    if (isNowFinished) {
-      setIsFinished(true);
-      onFinish(score);
-    }
   };
 
-  const onRequestHint = () => {
-    setScore((score) => score - 15);
+  const onRequestHint = (num: number) => {
+    // First Hint (letter)
+    if (num === 1)
+      setScore((score) => Math.max(score - 10, 0));
+    // Second Hint (entire word)
+    if (num === 2)
+      setScore((score) => Math.max(score - 20, 0));
+
     return true;
   };
+
+  const onFinishPuzzle = () => {
+    setIsFinished(true);
+    onFinish(score);
+  }
 
   return (
     <div className='puzzle-content'>
@@ -46,8 +52,9 @@ function PuzzleContainer({ puzzleKey, isTutorial, onFinish }: PuzzleComponentPro
       </div>}
       <Puzzle
         ref={puzzleRef}
-        requestHint={onRequestHint}
         puzzleKey={puzzleKey}
+        requestHint={onRequestHint}
+        onFinish={onFinishPuzzle}
       />
       <Toast ref={toastRef} />
       <PuzzleInput onSubmit={onSubmit} />

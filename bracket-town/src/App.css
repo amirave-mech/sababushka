@@ -124,26 +124,28 @@
   }
 }
 
-.highlight {
-  background-color: rgba(255, 255, 0, 0.2);
+.bracket {
   padding: 3px 3px;
   margin: -3px -3px;
-  /* padding: .125rem .25rem; */
   border-radius: 4px;
-  cursor: pointer;
-
-  /* transition: all 0.2s linear; */
 }
 
-.highlight.hint {
+/* evil hack to prevent hovering on parent when hovering on child */
+.bracket.regular:hover:not(:has(.bracket:hover)) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.bracket.highlight {
+  background-color: rgba(255, 255, 0, 0.2);
+  cursor: pointer;
+}
+
+.bracket.hint {
   background-color: rgba(255, 187, 0, 0.2);
 }
 
-.correct {
+.bracket.correct {
   background-color: rgba(0, 255, 0, 0.2);
-  padding: 3px 0px;
-  margin: -3px 0px;
-  border-radius: 4px;
 }
 
 .puzzle-tutorial {
@@ -152,7 +154,6 @@
   padding: 1em 1em;
   color: rgb(0, 150, 85);
   text-align: center;
-  /* font-size: 0.75rem; */
 }
 
 @media (max-width: 640px) {

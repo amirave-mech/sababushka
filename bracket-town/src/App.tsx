@@ -6,7 +6,7 @@ import ReactConfetti from 'react-confetti';
 const PUZZLES = [
   'ברוך ה[בא|___ בימים (מאוד זקן)]!',
   '[דרך|___ א[גב|לתקוע סכין במקום הזה שקול לבגידה]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חוה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק אחד היה מטפל בך באמצעות הקזת דם]]ה',
-  '',
+  '[טובי|משקה [אלכוהול|כימאי יקרא לחומר זה אתנול]י יש[ראלי|מירוץ מכוניות, במסלול שטח ארוך] פופולרי בצבע כתום]ם ה[שני|היום בו אלוהים ה[בדיל|מתכת כסופה שמשמשת לציפוי] בין מים לשמיים]ים [מן|נפל מהשמיים ביציאת מצריים] ה[אחד|___ ב[פה|איפה שנס גדול היה, כידוע] ו-___ בלב, נאמר על אדם [צבוע|אחד מצבא רשע עזר למופאסה ב"מלך הא[ריו|יעד תיירותי וביתו של "ישו הגואל"]ת"]]',
   '',
   '',
 ]
@@ -26,7 +26,7 @@ function App() {
   const [pageIndex, setPageIndex] = useState(0);
   const [runConfetti, setRunConfetti] = useState(false);
 
-  const handleFinish = (score: number) => {
+  const handleFinish = (_score: number) => {
     // setFinalScore(score);
     // setIsComplete(true);
 
@@ -40,7 +40,7 @@ function App() {
     if (newIndex < 0)
       newIndex = 0;
     if (newIndex >= PUZZLES.length)
-      newIndex = PUZZLES.length;
+      newIndex = PUZZLES.length - 1;
 
     setPageIndex(newIndex);
   }

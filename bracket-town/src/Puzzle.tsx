@@ -2,33 +2,46 @@ import { forwardRef, ReactNode, useCallback, useEffect, useImperativeHandle, use
 import Bracket from "./Bracket";
 
 interface PuzzleProps {
-    puzzleKey: string, requestHint: () => boolean
+    puzzleKey: string, requestHint: (num: number) => boolean, onFinish: () => void
 }
 interface PuzzleRefHandle {
     submitAnswer: () => string; // Return type defined explicitly
 }
 
-const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHint }: PuzzleProps, ref: any) => {
+const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHint, onFinish }: PuzzleProps, ref: any) => {
     const [puzzleDom, setPuzzleDom] = useState<ReactNode[]>([]);
     const rootBracket = useRef<Bracket | null>(null);
-    const setRootBracket = (newRootBracket: Bracket) => {rootBracket.current = newRootBracket};
+    const setRootBracket = (newRootBracket: Bracket) => { rootBracket.current = newRootBracket };
     // const [curText, setCurText] = useState('');
 
     const getHint = useCallback((bracket: Bracket) => {
         console.log(puzzleDom);
         if (!rootBracket.current)
             throw new Error(`Cannot use hint when bracket is null!`);
-        
-        const isSure = confirm('להראות את האות הראשונה?')
-        if (!isSure)
-            return;
-    
-        const res = requestHint();
-        if (!res)
-            return;
-    
-        bracket.revealLetter();
-        setPuzzleDom(rootBracket.current.toDom(getHint));
+
+        if (!bracket.hintUsed) {
+            const isSure = confirm('להראות את האות הראשונה?')
+            if (!isSure)
+                return;
+
+            const res = requestHint(1);
+            if (!res)
+                return;
+
+            bracket.revealLetter();
+            setPuzzleDom(rootBracket.current.toDom(getHint));
+        }
+        else if (!bracket.isSolved) {
+            const isSure = confirm('לגלות את כל המילה?')
+            if (!isSure)
+                return;
+
+            const res = requestHint(2);
+            if (!res)
+                return;
+
+            revealBracket(bracket)
+        }
     }, [puzzleKey, puzzleDom, rootBracket, requestHint]);
 
     useEffect(() => {
@@ -36,7 +49,7 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
         const newBracket = Bracket.create(puzzleKey);
         setRootBracket(newBracket);
         console.log(newBracket);
-    
+
         setPuzzleDom(newBracket.toDom(getHint));
     }, [puzzleKey]);
 
@@ -44,7 +57,7 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
         submitAnswer
     }));
 
-    const submitAnswer = (answer: string): [boolean, boolean] => {
+    const submitAnswer = (answer: string): boolean => {
         if (!rootBracket.current)
             throw new Error(`Cannot submit answer when bracket is null!`);
 
@@ -53,14 +66,27 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
         for (let i = 0; i < inners.length; i++) {
             const bracket = inners[i];
             if (bracket.answer === answer) {
-                bracket.collapse();
-                setPuzzleDom(rootBracket.current.toDom(getHint));
-                const isFinished = rootBracket.current.isInner;
-                return [true, isFinished];
+                revealBracket(bracket);
+
+                return true;
             }
         }
 
-        return [false, false];
+        return false;
+    }
+
+    const revealBracket = (bracket: Bracket) => {
+        if (!rootBracket.current)
+            throw new Error(`Cannot submit answer when bracket is null!`);
+        
+        bracket.collapse();
+        setPuzzleDom(rootBracket.current.toDom(getHint));
+
+        setTimeout(() => {
+            const isFinished = rootBracket.current!.isInner;
+            if (isFinished)
+                onFinish();
+        }, 500)
     }
 
     return (

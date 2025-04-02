@@ -40,14 +40,14 @@ class Bracket {
         this.content.forEach((elem, i) => {
             if (elem instanceof Bracket)
                 if (elem.isSolved) {
-                    dom.push((<span key={i} className="correct">{elem.answer}</span>))
+                    dom.push((<span key={i} className="bracket correct">{elem.answer}</span>))
                 }
                 else if (elem.isInner) {
-                    const className = 'highlight' + (elem.hintUsed ? ' hint' : '');
+                    const className = 'bracket ' + (elem.hintUsed ? 'hint' : 'highlight');
                     dom.push(<span className={className} key={i} onClick={_ => getHint(elem)}>[{elem.toDom(getHint)}]</span>);
                 }
                 else {
-                    dom.push(<Fragment key={i}>[{elem.toDom(getHint)}]</Fragment>)
+                    dom.push(<span key={i} className='bracket regular'>[{elem.toDom(getHint)}]</span>)
                 }
             else
                 dom.push(elem);
