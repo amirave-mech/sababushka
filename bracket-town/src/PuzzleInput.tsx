@@ -64,7 +64,7 @@ const PuzzleInput: React.FC<PuzzleInputProps> = ({
                     readOnly={mobileMode}
                     autoComplete='off'
                 />
-                <button className='puzzle-submit' disabled={(text ? false : true)}>שלח</button>
+                <button className='bbutton puzzle-submit' disabled={(text ? false : true)}>שלח</button>
             </form>
 
             {mobileMode && (

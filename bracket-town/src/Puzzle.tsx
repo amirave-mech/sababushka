@@ -91,9 +91,9 @@ const Puzzle = forwardRef<PuzzleRefHandle, PuzzleProps>(({ puzzleKey, requestHin
     }
 
     return (
-        <div className='puzzle'>
+        <>
             {puzzleDom}
-        </div>
+        </>
     );
 });
 

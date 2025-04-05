@@ -1,7 +1,12 @@
+@import url(https://fonts.googleapis.com/css2?family=Miriam+Libre:wght@400..700&family=Secular+One&display=swap);
+
 :root {
-  --main-font: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --main-font: system-ui, Helvetica, Arial, sans-serif;
+  --header-font: "Secular One", Helvetica, Arial, sans-serif;
   /* -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; */
-  --mono-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --mono-font: "Miriam Libre", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --main-black: #213547;
 
   --border-radius: 8px;
 
@@ -14,7 +19,7 @@
   /* color-scheme: light dark; */
   /* color: rgba(255, 255, 255, 0.87);
   background-color: #242424; */
-  color: #213547;
+  color: var(--main-black);
   background-color: #ffffff;
 
   font-synthesis: none;
@@ -29,6 +34,28 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100dvh;
+}
+
+button {
+  cursor: pointer;
+}
+
+.bbutton {
+  background-color: rgb(33, 96, 214);
+  color: white;
+  border-color: transparent;
+  border-radius: var(--border-radius);
+  
+  font-weight: 500;
+  font-size: 1em;
+
+  padding: 0.75em 1.5em;
+  transition: all 0.2s ease-out;
+}
+
+.bbutton:focus,
+.bbutton:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
 /* button {

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import './App.css';
-import PuzzleContainer from './PuzzleContainer';
+import PuzzleContainer, { PuzzleConfig } from './PuzzleContainer';
 import ReactConfetti from 'react-confetti';
+import * as Constants from './Constants';
 
 const PUZZLES = [
   'ברוך ה[בא|___ בימים (מאוד זקן)]!',
+  'ו[אהב|יותר מ"חיבב"]ת ל[רע|לא טוב]ך כ[מוך|חומר שמצטבר ב[מסנן|לא עונה להודעה, באינטרנט] של מייבש כביסה]',
   '[דרך|___ א[גב|לתקוע סכין במקום הזה שקול לבגידה]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חוה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק אחד היה מטפל בך באמצעות הקזת דם]]ה',
   '[טובי|משקה [אלכוהול|כימאי יקרא לחומר זה אתנול]י יש[ראלי|מירוץ מכוניות, במסלול שטח ארוך] פופולרי בצבע כתום]ם ה[שני|היום בו אלוהים ה[בדיל|מתכת כסופה שמשמשת לציפוי] בין מים לשמיים]ים [מן|נפל מהשמיים ביציאת מצריים] ה[אחד|___ ב[פה|איפה שנס גדול היה, כידוע] ו-___ בלב, נאמר על אדם [צבוע|אחד מצבא רשע עזר למופאסה ב"מלך הא[ריו|יעד תיירותי וביתו של "ישו הגואל"]ת"]]',
-  '',
-  '',
+  // '',
+  // '',
 ]
 
 const CONFETTI_PROPS = {
@@ -45,25 +47,49 @@ function App() {
     setPageIndex(newIndex);
   }
 
+  const puzzleConfig: PuzzleConfig = {
+    puzzleKey: PUZZLES[pageIndex],
+    startText: null,
+    endText: null,
+    showContinueButton: true,
+    showScore: true,
+  }
+
+  if (pageIndex == 0) {
+    puzzleConfig.startText = Constants.INFO_LEVEL_1_START;
+    puzzleConfig.endText = Constants.INFO_LEVEL_1_END;
+    puzzleConfig.showScore = false;
+  }
+
+  if (pageIndex == 1) {
+    puzzleConfig.startText = Constants.INFO_LEVEL_2_START;
+    // puzzleConfig.endText = Constants.INFO_LEVEL_2_END;
+    // puzzleConfig.showScore = false;
+  }
+
+  if (pageIndex == PUZZLES.length - 1) {
+    puzzleConfig.showContinueButton = false;
+  }
+
   return (
     <div className='puzzle-container'>
       <div className='puzzle-header'>
         <h1>[סבבושקה]</h1>
-        <div className='pagination'>
+        {/* <div className='pagination'>
           <button className='pagination-arrow' onClick={_ => movePage(pageIndex - 1)}>{'<'}</button>
           {PUZZLES.map((_puzzleKey, i) => {
             return (<span className={'pagination-dot' + (i === pageIndex ? ' active' : '')}>•</span>);
           })}
           <button className='pagination-arrow' onClick={_ => movePage(pageIndex + 1)}>{'>'}</button>
-        </div>
+        </div> */}
       </div>
       <PuzzleContainer
         key={pageIndex}
-        puzzleKey={PUZZLES[pageIndex]}
-        isTutorial={pageIndex === 0}
+        config={puzzleConfig}
         onFinish={handleFinish}
+        onContinue={() => movePage(pageIndex + 1)}
       />
-      {runConfetti && <ReactConfetti width={window.innerWidth} height={window.innerHeight} {...CONFETTI_PROPS}/>}
+      {runConfetti && <ReactConfetti width={window.innerWidth} height={window.innerHeight} {...CONFETTI_PROPS} />}
     </div>
   );
 }
