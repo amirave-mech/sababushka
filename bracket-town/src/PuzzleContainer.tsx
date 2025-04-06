@@ -4,8 +4,9 @@ import Toast from './Toast';
 import PuzzleInput from './PuzzleInput';
 import * as Constants from './Constants';
 import { shareSMS, shareToClipboard } from './ShareUtil';
-import { PuzzleState, PuzzleStateAction, savePuzzleState, loadPuzzleState } from './CookieUtils';
+import { PuzzleStateAction, savePuzzleState, loadPuzzleState } from './CookieUtils';
 import { clearPuzzleState } from "./CookieUtils";
+import { isEqualHebrew } from "./Utils";
 
 export interface PuzzleConfig {
   puzzleKey: string;
@@ -60,7 +61,7 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       savedState.actions.forEach(action => {
         if (action.type === 'guess' && action.correct) {
           const inners = newBracket.getAllInners();
-          const bracket = inners.find(b => b.answer === action.answer);
+          const bracket = inners.find(b => isEqualHebrew(b.answer, action.answer));
           if (bracket) {
             bracket.collapse();
           }
@@ -142,14 +143,15 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       throw new Error(`Cannot submit answer when bracket is null!`);
     }
 
+    text = text.trim();
+
     const inners = rootBracket.current.getAllInners();
 
     for (let i = 0; i < inners.length; i++) {
       const bracket = inners[i];
-      if (bracket.answer === text) {
+      if (!bracket.isSolved && isEqualHebrew(bracket.answer, text)) {
         revealBracket(bracket);
 
-        // Add successful guess to actions
         setActions(prevActions => [...prevActions, {
           type: 'guess',
           answer: text,
@@ -162,14 +164,27 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       }
     }
 
-    // Add incorrect guess to actions
-    setActions(prevActions => [...prevActions, {
-      type: 'guess',
-      answer: text,
-      correct: false
-    }]);
+    let wasGuessedAlready = false;
+    actions.forEach(action => {
+      if (action.type === 'guess' && isEqualHebrew(action.answer, text))
+        wasGuessedAlready = true;
+    });
 
-    updateState();
+    if (wasGuessedAlready) {
+      toastRef.current.showError(`כבר ניחשת "${text}"!`);
+    }
+    else {
+      // Add incorrect guess to actions
+      setActions(prevActions => [...prevActions, {
+        type: 'guess',
+        answer: text,
+        correct: false
+      }]);
+      setScore((score) => Math.max(score - Constants.WRONG_GUESS_COST, 0));
+      toastRef.current.showError('טעות! הניחוש לא תואם אף אחת מההגדרות.');
+
+      updateState();
+    }
 
     return false;
   };
@@ -191,15 +206,6 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
         onFinish(score);
       }
     }, 500);
-  };
-
-  const onSubmit = (text: string) => {
-    const correct = submitAnswer(text);
-
-    if (correct === false) {
-      setScore((score) => Math.max(score - Constants.WRONG_GUESS_COST, 0));
-      toastRef.current.showError('טעות! הניחוש לא תואם אף אחד מהסוגרים.');
-    }
   };
 
   const onShare = () => {
@@ -249,7 +255,7 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       {!isFinished ? (
         <>
           <Toast ref={toastRef} />
-          <PuzzleInput onSubmit={onSubmit} />
+          <PuzzleInput onSubmit={submitAnswer} />
         </>
       ) : (
         <div className='puzzle-stats'>
@@ -257,19 +263,21 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
             <div className='puzzle-tutorial'>{config.endText}</div>
           )}
 
-          <button className='bbutton puzzle-share' onClick={onShare}>
-            שתף עם חברים 📢
-          </button>
-
-          {config.showContinueButton && (
-            <button className='bbutton puzzle-continue' onClick={onContinue}>
-              [שלב הבא]
+          <div className='puzzle-end-buttons'>
+            <button className='bbutton puzzle-share' onClick={onShare}>
+              שתף עם חברים 📢
             </button>
-          )}
 
-          <button className="bbutton puzzle-reset" onClick={onReset}>
-            אפס פאזל
-          </button>
+            {config.showContinueButton && (
+              <button className='bbutton puzzle-continue' onClick={onContinue}>
+                [שלב הבא]
+              </button>
+            )}
+
+            <button className="bbutton puzzle-reset" onClick={onReset}>
+              אפס פאזל
+            </button>
+          </div>
         </div>
       )}
     </div>

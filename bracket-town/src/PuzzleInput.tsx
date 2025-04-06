@@ -24,6 +24,8 @@ const PuzzleInput: React.FC<PuzzleInputProps> = ({
         const matchQuery = window.matchMedia("(max-width: 640px)");
         setMobileMode(matchQuery.matches);
         matchQuery.addEventListener('change', (e) => setMobileMode(e.matches));
+        if (!mobileMode)
+            inputRef.current?.focus();
     }, []);
 
     // Handle key press

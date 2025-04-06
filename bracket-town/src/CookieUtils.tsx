@@ -1,5 +1,4 @@
 import Cookies from 'js-cookie';
-import Bracket from './Bracket';
 
 export interface PuzzleStateGuessAction {
   type: 'guess',
@@ -23,7 +22,7 @@ export interface PuzzleState {
 
 // Cookie management
 const COOKIE_KEY = 'puzzles';
-const COOKIE_EXPIRY = 30; // days
+// const COOKIE_EXPIRY = 30; // days
 
 export function savePuzzleState(puzzleKey: string, state: PuzzleState): void {
   Cookies.set(`${COOKIE_KEY}.${puzzleKey}`, JSON.stringify(state));
