@@ -82,6 +82,32 @@ class Bracket {
         return inners;
     }
 
+    getPath(): number[] {
+        let p: Bracket = this;
+        const path: number[] = [];
+
+        while (p.parent != null) {
+            path.push(p.parent.content.indexOf(p));
+            p = p.parent;
+        }
+
+        return path.reverse();
+    }
+
+    find(path: number[]) {
+        let b: Bracket = this;
+
+        path.forEach(i => {
+            console.log(b, i)
+            if (!(b.content[i] instanceof Bracket))
+                throw new Error(`[Bracket] failed to find path ${path.toString()} on bracket ${this.toText()}`);
+
+            b = b.content[i];
+        })
+
+        return b;
+    }
+
     collapse() {
         if (!this.parent)
             throw new Error(`Parent empty in bracket ${this.toText()}`);
