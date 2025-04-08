@@ -6,6 +6,10 @@
   background-color: whitesmoke;
 }
 
+#root:has(.puzzle.finished) {
+  background: linear-gradient(59deg, rgba(167, 255, 204, 1) 0%, rgba(188, 244, 255, 1) 35%, rgba(214, 220, 255, 1) 64%, rgba(255, 192, 251, 1) 99%);
+}
+
 .puzzle-container {
   height: 100%;
   max-width: 42rem;
@@ -205,4 +209,35 @@
 
 .puzzle-reset {
   background-color: rgb(50, 59, 59);
+}
+
+.end-screen {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  
+  padding: 1rem 1.5rem;
+}
+
+.end-screen h3, p {
+  text-align: center;
+}
+
+.button-group {
+  border: 2px dashed grey;
+  /* background-color: whitesmoke; */
+  font-family: var(--mono-font);
+  
+  border-radius: var(--border-radius);
+  text-align: center;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  line-height: 0;
+  gap: 0.5em;
+
+  margin: 0.5em 0;
 }

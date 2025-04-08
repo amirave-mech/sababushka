@@ -78,3 +78,7 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 } */
+
+.flex-expand {
+  flex: 1 1 auto;
+}

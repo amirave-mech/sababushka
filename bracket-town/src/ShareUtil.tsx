@@ -2,6 +2,13 @@
  * Exports for sharing and clipboard functionality
  */
 
+export const shareNative = (shareText: string): boolean => {
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+        return shareSMS(shareText);
+
+    return shareToClipboard(shareText);
+}
+
 /**
  * Handles sharing results via the user's preferred app using Web Share API
  * Falls back to SMS URL scheme if Web Share API is not available
@@ -43,7 +50,7 @@ const fallbackToSMS = (shareText: string): boolean => {
     const encodedText = encodeURIComponent(shareText);
     // Use correct SMS URL scheme format
     window.location.href = `sms:?&body=${encodedText}`;
-    
+
     return true;
 };
 

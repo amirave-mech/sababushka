@@ -3,10 +3,10 @@ import Bracket from "./Bracket";
 import Toast from './Toast';
 import PuzzleInput from './PuzzleInput';
 import * as Constants from './Constants';
-import { shareSMS, shareToClipboard } from './ShareUtil';
+import { shareNative } from './ShareUtil';
 import { PuzzleStateAction, savePuzzleState, loadPuzzleState } from './CookieUtils';
 import { clearPuzzleState } from "./CookieUtils";
-import { isEqualHebrew } from "./Utils";
+import { formatString, getScoreEmojis, isEqualHebrew } from "./Utils";
 
 export interface PuzzleConfig {
   puzzleKey: string;
@@ -208,14 +208,6 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
     }, 500);
   };
 
-  const onShare = () => {
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      shareSMS(Constants.SHARE_MESSAGE);
-    } else {
-      shareToClipboard(Constants.SHARE_MESSAGE);
-    }
-  };
-
   // Reset button handler to clear saved state
   const onReset = () => {
     if (confirm('האם אתה בטוח שברצונך לאפס את הפאזל?')) {
@@ -234,6 +226,11 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       setPuzzleDom(newBracket.toDom(getHint, null));
     }
   };
+
+  const onShare = () => {
+    const shareText = formatString(Constants.SHARE_MESSAGE_LEVEL, config.puzzleKey + 1, score.toString(), getScoreEmojis(score, 100));
+    shareNative(shareText); 
+  }
 
   return (
     <div className='puzzle-content'>
