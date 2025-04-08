@@ -1,18 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import PuzzleContainer, { PuzzleConfig } from './PuzzleContainer';
 import ReactConfetti from 'react-confetti';
 import * as Constants from './Constants';
 import { shareNative } from './ShareUtil';
+import { getPuzzleCount, getPuzzleKeyFromOrder } from './CookieUtils';
+import ReactGA from 'react-ga4';
 
-const PUZZLES = [
-  'ברוך ה[בא|___ בימים (מאוד זקן)]!',
-  'ו[אהב|יותר מ"חיבב"]ת ל[רע|לא טוב]ך כ[מוך|חומר שמצטבר ב[מסנן|לא עונה להודעה, באינטרנט] של מייבש כביסה]',
-  '[דרך|___ א[גב|לתקוע סכין במקום הזה שקול לבגידה]] א[רץ|"יונתן הקטן __ ב[בוקר|שדה ___, מגוריו של הנ[שיא|רשומה בספר גינס] הראשון בערוב ימיו] אל ה[גן|מילה שבאה לפני "חיות" ו"שעשועים"]"] [קד|השת[חוה|אמם של קין ואבל] בפני]מה ל[תור|קשה לקבוע אחד [כזה|ככה וככה ו-___ ו-___ (אושר כהן)] ל[רופא|בעבר הרחוק אחד היה מטפל בך באמצעות הקזת דם]]ה',
-  '[טובי|משקה [אלכוהול|כימאי יקרא לחומר זה אתנול]י יש[ראלי|מירוץ מכוניות, במסלול שטח ארוך] פופולרי בצבע כתום]ם ה[שני|היום בו אלוהים ה[בדיל|מתכת כסופה שמשמשת לציפוי] בין מים לשמיים]ים [מן|נפל מהשמיים ביציאת מצריים] ה[אחד|___ ב[פה|איפה שנס גדול היה, כידוע] ו-___ בלב, נאמר על אדם [צבוע|אחד מצבא רשע עזר למופאסה ב"מלך הא[ריו|יעד תיירותי וביתו של "ישו הגואל"]ת"]]',
-  // '',
-  // '',
-]
+const TRACKING_ID = 'G-MDN6H7712Z';
 
 const CONFETTI_PROPS = {
   // initialVelocityX: 3000,
@@ -29,6 +24,11 @@ function App() {
   const [pageIndex, setPageIndex] = useState(0);
   const [runConfetti, setRunConfetti] = useState(false);
 
+  useEffect(() => {
+    ReactGA.initialize(TRACKING_ID);
+    ReactGA.send({ hitType: "pageview", page: "/", title: "Sababushka Page"})
+  })
+
   const handleFinish = (_score: number) => {
     // setFinalScore(score);
     // setIsComplete(true);
@@ -42,14 +42,15 @@ function App() {
   const movePage = (newIndex: number) => {
     if (newIndex < 0)
       newIndex = 0;
-    if (newIndex > PUZZLES.length)
-      newIndex = PUZZLES.length;
+    if (newIndex > getPuzzleCount())
+      newIndex = getPuzzleCount();
 
     setPageIndex(newIndex);
   }
 
   const puzzleConfig: PuzzleConfig = {
-    puzzleKey: PUZZLES[pageIndex],
+    puzzleKey: getPuzzleKeyFromOrder(pageIndex),
+    puzzleDisplayName: `שלב ${pageIndex + 1}`,
     startText: null,
     endText: null,
     showContinueButton: true,
@@ -68,9 +69,11 @@ function App() {
     // puzzleConfig.showScore = false;
   }
 
-  if (pageIndex == PUZZLES.length - 1) {
-    puzzleConfig.showContinueButton = false;
-  }
+  // if (pageIndex == PUZZLES.length - 1) {
+  //   puzzleConfig.showContinueButton = false;
+  // }
+
+  // TODO fix this weenie ass switch
 
   return (
     <>
@@ -85,7 +88,7 @@ function App() {
             <button className='pagination-arrow' onClick={_ => movePage(pageIndex + 1)}>{'>'}</button>
           </div>
         </div>
-        {(pageIndex < PUZZLES.length) ? <PuzzleContainer
+        {(pageIndex < getPuzzleCount()) ? <PuzzleContainer
           key={pageIndex}
           config={puzzleConfig}
           onFinish={handleFinish}

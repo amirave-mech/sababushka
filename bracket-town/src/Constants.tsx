@@ -11,5 +11,5 @@ export const INFO_LEVEL_1_END = 'יפה מאוד, הצלחתם את השלב ה�
 export const INFO_LEVEL_2_START = 'ניתן לפתור חידה רק כאשר אין סוגריים פתוחות בתוכה. החידות האלו מסומנות בצהוב.';
 // export const 
 
-export const SHARE_MESSAGE_LEVEL = `סיימתי את שלב {0} עם {1} נקודות!\n{2}\n${window.location}`
+export const SHARE_MESSAGE_LEVEL = `סיימתי את {0} עם {1}/100 נקודות!\n{2}\n${window.location}`
 export const SHARE_MESSAGE_END = `סיימתי את כל השלבים! שחקו גם:\n${window.location}`

@@ -1,15 +1,16 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+// Custom hook to manage game logic
+import { useCallback, useEffect, useRef, useState } from "react";
 import Bracket from "./Bracket";
 import Toast from './Toast';
 import PuzzleInput from './PuzzleInput';
 import * as Constants from './Constants';
 import { shareNative } from './ShareUtil';
-import { PuzzleStateAction, savePuzzleState, loadPuzzleState } from './CookieUtils';
-import { clearPuzzleState } from "./CookieUtils";
+import { PuzzleStateAction, savePuzzleState, loadPuzzleState, getPuzzle, clearPuzzleState } from './CookieUtils';
 import { formatString, getScoreEmojis, isEqualHebrew } from "./Utils";
 
 export interface PuzzleConfig {
   puzzleKey: string;
+  puzzleDisplayName: string;
   startText: string | null;
   endText: string | null;
   showContinueButton: boolean;
@@ -22,33 +23,24 @@ interface PuzzleContainerProps {
   onContinue: () => void;
 }
 
-function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps) {
-  const [isReady, setIsReady] = useState(false);
+// Custom hook to manage game state and logic
+function usePuzzleGame(config: PuzzleConfig, onFinish: (score: number) => void) {
   const [score, setScore] = useState(100);
   const [isFinished, setIsFinished] = useState(false);
-  const [puzzleDom, setPuzzleDom] = useState<ReactNode[]>([]);
   const [lastAnswer, setLastAnswer] = useState<string | null>(null);
   const [actions, setActions] = useState<PuzzleStateAction[]>([]);
+  const [isReady, setIsReady] = useState(false);
 
-  const stateRef = useRef({ actions, score, isFinished, lastAnswer });
   const rootBracket = useRef<Bracket | null>(null);
-  const toastRef = useRef<any>(null);
 
+  // Initial setup and load saved state
   useEffect(() => {
-    stateRef.current = { actions, score, isFinished, lastAnswer };
-    if (isReady)
-      savePuzzleState(config.puzzleKey, stateRef.current)
-  }, [isReady, actions, score, isFinished, lastAnswer])
-
-  // Load saved state on component mount
-  useEffect(() => {
-    const newBracket = Bracket.create(config.puzzleKey);
+    const puzzle = getPuzzle(config.puzzleKey);
+    const newBracket = Bracket.create(puzzle);
     rootBracket.current = newBracket;
 
     // Try to load saved state
     const savedState = loadPuzzleState(config.puzzleKey);
-
-    console.log(savedState);
 
     if (savedState) {
       // Restore score and finished state
@@ -68,7 +60,6 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
         } else if (action.type === 'hint') {
           // Find the bracket by path and reveal letter
           let targetBracket = newBracket.find(action.path);
-
           if (!targetBracket.isSolved) {
             targetBracket.revealLetter();
           }
@@ -81,51 +72,36 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       }
     }
 
-    setPuzzleDom(newBracket.toDom(getHint, savedState?.lastAnswer ?? null));
     setIsReady(true);
   }, [config.puzzleKey]);
 
-  const updateState = () => {
-    // if (rootBracket.current) {
-    //   const currentState: PuzzleState = {
-    //     actions : stateRef.current.actions,
-    //     score: stateRef.current.score,
-    //     isFinished: stateRef.current.isFinished,
-    //     lastAnswer: stateRef.current.lastAnswer
-    //   };
-
-    //   savePuzzleState(config.puzzleKey, currentState);
-
-    //   console.log(currentState);
-    // }
-
-    // savePuzzleState(config.puzzleKey, stateRef.current);
-  };
-
-  const getHint = useCallback((bracket: Bracket) => {
-    if (!rootBracket.current) {
-      throw new Error(`Cannot use hint when bracket is null!`);
+  // Save state whenever it changes
+  useEffect(() => {
+    if (isReady) {
+      savePuzzleState(config.puzzleKey, { actions, score, isFinished, lastAnswer });
     }
+  }, [isReady, actions, score, isFinished, lastAnswer, config.puzzleKey]);
+
+  const getHint = useCallback((bracket: Bracket): void => {
+    if (!rootBracket.current) return;
 
     if (!bracket.hintUsed) {
       const isSure = confirm('להראות את האות הראשונה?');
       if (!isSure) return;
 
-      setScore((score) => Math.max(score - Constants.HINT_COST, 0));
+      setScore((s) => Math.max(s - Constants.HINT_COST, 0));
 
       // Add hint action to state
       const path = bracket.getPath();
       setActions(prevActions => [...prevActions, { type: 'hint', path }]);
 
       bracket.revealLetter();
-      setPuzzleDom(rootBracket.current.toDom(getHint, lastAnswer));
-      updateState();
     }
     else if (!bracket.isSolved) {
       const isSure = confirm('לגלות את כל המילה?');
       if (!isSure) return;
 
-      setScore((score) => Math.max(score - Constants.REVEAL_COST, 0));
+      setScore((s) => Math.max(s - Constants.REVEAL_COST, 0));
 
       setActions(prevActions => [...prevActions, {
         type: 'guess',
@@ -134,17 +110,13 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
       }]);
 
       revealBracket(bracket);
-      updateState();
     }
-  }, [config.puzzleKey, puzzleDom, rootBracket, lastAnswer]);
+  }, []);
 
-  const submitAnswer = (text: string): boolean => {
-    if (!rootBracket.current) {
-      throw new Error(`Cannot submit answer when bracket is null!`);
-    }
+  const submitAnswer = useCallback((text: string): boolean => {
+    if (!rootBracket.current) return false;
 
     text = text.trim();
-
     const inners = rootBracket.current.getAllInners();
 
     for (let i = 0; i < inners.length; i++) {
@@ -158,8 +130,6 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
           correct: true
         }]);
 
-        updateState();
-
         return true;
       }
     }
@@ -170,112 +140,191 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
         wasGuessedAlready = true;
     });
 
-    if (wasGuessedAlready) {
-      toastRef.current.showError(`כבר ניחשת "${text}"!`);
-    }
-    else {
-      // Add incorrect guess to actions
+    if (!wasGuessedAlready) {
       setActions(prevActions => [...prevActions, {
         type: 'guess',
         answer: text,
         correct: false
       }]);
-      setScore((score) => Math.max(score - Constants.WRONG_GUESS_COST, 0));
-      toastRef.current.showError('טעות! הניחוש לא תואם אף אחת מההגדרות.');
-
-      updateState();
+      setScore((s) => Math.max(s - Constants.WRONG_GUESS_COST, 0));
     }
 
     return false;
-  };
+  }, [actions]);
 
-  const revealBracket = (bracket: Bracket) => {
-    if (!rootBracket.current) {
-      throw new Error(`Cannot submit answer when bracket is null!`);
-    }
+  const revealBracket = useCallback((bracket: Bracket) => {
+    if (!rootBracket.current) return;
 
     bracket.collapse();
     setLastAnswer(bracket.answer!);
-    setPuzzleDom(rootBracket.current.toDom(getHint, bracket.answer!));
 
     setTimeout(() => {
-      const isFinished = rootBracket.current!.isInner;
-      if (isFinished) {
+      if (rootBracket.current?.isInner) {
         setIsFinished(true);
-        updateState();
         onFinish(score);
       }
     }, 500);
+  }, [onFinish, score]);
+
+  const resetGame = useCallback(() => {
+    clearPuzzleState(config.puzzleKey);
+    setScore(100);
+    setIsFinished(false);
+    setLastAnswer(null);
+    setActions([]);
+
+    // Recreate bracket
+    const newBracket = Bracket.create(getPuzzle(config.puzzleKey));
+    rootBracket.current = newBracket;
+  }, [config.puzzleKey]);
+
+  const shareScore = useCallback(() => {
+    const shareText = formatString(
+      Constants.SHARE_MESSAGE_LEVEL,
+      config.puzzleDisplayName,
+      score.toString(),
+      getScoreEmojis(score, 100)
+    );
+    shareNative(shareText);
+  }, [config.puzzleDisplayName, score]);
+
+  return {
+    score,
+    isFinished,
+    lastAnswer,
+    isReady,
+    rootBracket: rootBracket.current,
+    getHint,
+    submitAnswer,
+    resetGame,
+    shareScore
+  };
+}
+
+// Small component for Score display
+function PuzzleScore({ score }: { score: number }) {
+  return (
+    <div className='puzzle-score'>
+      <label>ניקוד: {score}/100</label>
+      <progress value={score} max='100'>{score}%</progress>
+    </div>
+  );
+}
+
+// Component to display tutorial/help text
+function PuzzleText({ text }: { text: string | null }) {
+  if (!text) return null;
+  return <div className='puzzle-tutorial'>{text}</div>;
+}
+
+// Component to display the entire puzzle board
+function PuzzleBoard({
+  bracket,
+  isFinished,
+  getHint,
+  lastAnswer
+}: {
+  bracket: Bracket | null;
+  isFinished: boolean;
+  getHint: (bracket: Bracket) => void;
+  lastAnswer: string | null;
+}) {
+  if (!bracket) return null;
+
+  return (
+    <div className={'puzzle' + (isFinished ? ' finished' : '')}>
+      {bracket.toDom(getHint, lastAnswer)}
+    </div>
+  );
+}
+
+// Component for controls when puzzle is finished
+function PuzzleComplete({
+  endText,
+  onShare,
+  onContinue,
+  onReset,
+  showContinueButton
+}: {
+  endText: string | null;
+  onShare: () => void;
+  onContinue: () => void;
+  onReset: () => void;
+  showContinueButton: boolean;
+}) {
+  return (
+    <div className='puzzle-stats'>
+      <PuzzleText text={endText} />
+
+      <div className='puzzle-end-buttons'>
+        <button className='bbutton puzzle-share' onClick={onShare}>
+          שתף עם חברים 📢
+        </button>
+
+        {showContinueButton && (
+          <button className='bbutton puzzle-continue' onClick={onContinue}>
+            [שלב הבא]
+          </button>
+        )}
+
+        <button className="bbutton puzzle-reset" onClick={onReset}>
+          אפס פאזל
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Main component
+function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps) {
+  const game = usePuzzleGame(config, onFinish);
+  const toastRef = useRef<any>(null);
+
+  const handleSubmitAnswer = (text: string): boolean => {
+    const result = game.submitAnswer(text);
+    if (!result) {
+      const wasGuessedAlready = false; // This would ideally be returned from submitAnswer
+      if (wasGuessedAlready) {
+        toastRef.current?.showError(`כבר ניחשת "${text}"!`);
+      } else {
+        toastRef.current?.showError('טעות! הניחוש לא תואם אף אחת מההגדרות.');
+      }
+    }
+    return result;
   };
 
-  // Reset button handler to clear saved state
-  const onReset = () => {
+  const handleReset = () => {
     if (confirm('האם אתה בטוח שברצונך לאפס את הפאזל?')) {
-      // Clear saved state
-      clearPuzzleState(config.puzzleKey);
-
-      // Reset component state
-      setScore(100);
-      setIsFinished(false);
-      setLastAnswer(null);
-      setActions([]);
-
-      // Recreate bracket
-      const newBracket = Bracket.create(config.puzzleKey);
-      rootBracket.current = newBracket;
-      setPuzzleDom(newBracket.toDom(getHint, null));
+      game.resetGame();
     }
   };
 
-  const onShare = () => {
-    const shareText = formatString(Constants.SHARE_MESSAGE_LEVEL, config.puzzleKey + 1, score.toString(), getScoreEmojis(score, 100));
-    shareNative(shareText); 
-  }
-
   return (
     <div className='puzzle-content'>
-      {config.showScore && (
-        <div className='puzzle-score'>
-          <label>ניקוד: {score}/100</label>
-          <progress value={score} max='100'>{score}%</progress>
-        </div>
-      )}
+      {config.showScore && <PuzzleScore score={game.score} />}
 
-      {(config.startText != null && !isFinished) && (
-        <div className='puzzle-tutorial'>{config.startText}</div>
-      )}
+      {!game.isFinished && <PuzzleText text={config.startText} />}
 
-      <div className={'puzzle' + (isFinished ? ' finished' : '')}>
-        {puzzleDom}
-      </div>
+      <PuzzleBoard
+        bracket={game.rootBracket}
+        isFinished={game.isFinished}
+        getHint={game.getHint}
+        lastAnswer={game.lastAnswer}
+      />
 
-      {!isFinished ? (
+      {!game.isFinished ? (
         <>
           <Toast ref={toastRef} />
-          <PuzzleInput onSubmit={submitAnswer} />
+          <PuzzleInput onSubmit={handleSubmitAnswer} />
         </>
       ) : (
-        <div className='puzzle-stats'>
-          {config.endText != null && (
-            <div className='puzzle-tutorial'>{config.endText}</div>
-          )}
-
-          <div className='puzzle-end-buttons'>
-            <button className='bbutton puzzle-share' onClick={onShare}>
-              שתף עם חברים 📢
-            </button>
-
-            {config.showContinueButton && (
-              <button className='bbutton puzzle-continue' onClick={onContinue}>
-                [שלב הבא]
-              </button>
-            )}
-
-            <button className="bbutton puzzle-reset" onClick={onReset}>
-              אפס פאזל
-            </button>
-          </div>
-        </div>
+        <PuzzleComplete
+          endText={config.endText}
+          onShare={game.shareScore}
+          onContinue={onContinue}
+          onReset={handleReset}
+          showContinueButton={config.showContinueButton}
+        />
       )}
     </div>
   );
