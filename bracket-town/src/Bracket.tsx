@@ -98,7 +98,6 @@ class Bracket {
         let b: Bracket = this;
 
         path.forEach(i => {
-            console.log(b, i)
             if (!(b.content[i] instanceof Bracket))
                 throw new Error(`[Bracket] failed to find path ${path.toString()} on bracket ${this.toText()}`);
 
@@ -154,10 +153,11 @@ class Bracket {
 
             // If closing bracket in depth 0, parse it recursively
             if (ch === '\]') {
+                bracketCount--;
+                
                 if (bracketCount > 0)
                     accum += ch;
 
-                bracketCount--;
 
                 if (bracketCount == 0) {
                     if (answer === undefined)
