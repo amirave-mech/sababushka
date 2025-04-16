@@ -7,6 +7,7 @@ import * as Constants from './Constants';
 import { shareNative } from './ShareUtil';
 import { PuzzleStateAction, savePuzzleState, loadPuzzleState, getPuzzle, clearPuzzleState } from './CookieUtils';
 import { formatString, getScoreEmojis, isEqualHebrew } from "./Utils";
+import { GAReportPuzzleReset, GAReportShare } from "./GAUtils";
 
 export interface PuzzleConfig {
   puzzleKey: string;
@@ -59,7 +60,7 @@ function usePuzzleGame(config: PuzzleConfig, onFinish: (score: number) => void) 
           }
         } else if (action.type === 'hint') {
           // Find the bracket by path and reveal letter
-          let targetBracket = newBracket.find(action.path);
+          const targetBracket = newBracket.find(action.path);
           if (!targetBracket.isSolved) {
             targetBracket.revealLetter();
           }
@@ -185,7 +186,10 @@ function usePuzzleGame(config: PuzzleConfig, onFinish: (score: number) => void) 
       score.toString(),
       getScoreEmojis(score, 100)
     );
-    shareNative(shareText);
+
+    shareNative(shareText).then(success => {
+      GAReportShare(false, success);
+    });
   }, [config.puzzleDisplayName, score]);
 
   return {
@@ -278,6 +282,7 @@ function PuzzleComplete({
 // Main component
 function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps) {
   const game = usePuzzleGame(config, onFinish);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toastRef = useRef<any>(null);
 
   const handleSubmitAnswer = (text: string): boolean => {
@@ -296,6 +301,7 @@ function PuzzleContainer({ config, onFinish, onContinue }: PuzzleContainerProps)
   const handleReset = () => {
     if (confirm('האם אתה בטוח שברצונך לאפס את הפאזל?')) {
       game.resetGame();
+      GAReportPuzzleReset(config.puzzleKey);
     }
   };
 

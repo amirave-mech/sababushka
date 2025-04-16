@@ -57,6 +57,15 @@ export function clearAllPuzzleStates(): void {
   });
 }
 
+export function setPuzzlePageIndex(index: number): void {
+  Cookies.set(`puzzle_page_index`, index.toString());
+}
+
+export function getPuzzlePageIndex(): number {
+  const index = Cookies.get(`puzzle_page_index`);
+  return index ? parseInt(index) : 0;
+}
+
 // TODO it feels wasteful to create a new data object every call
 
 interface PuzzleData {

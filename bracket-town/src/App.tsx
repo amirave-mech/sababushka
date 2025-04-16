@@ -4,10 +4,8 @@ import PuzzleContainer, { PuzzleConfig } from './PuzzleContainer';
 import ReactConfetti from 'react-confetti';
 import * as Constants from './Constants';
 import { shareNative } from './ShareUtil';
-import { getPuzzleCount, getPuzzleKeyFromOrder } from './CookieUtils';
-import ReactGA from 'react-ga4';
-
-const TRACKING_ID = 'G-MDN6H7712Z';
+import { getPuzzleCount, getPuzzleKeyFromOrder, getPuzzlePageIndex, setPuzzlePageIndex } from './CookieUtils';
+import { GAInit, GAReportPuzzleComplete, GAReportShare } from './GAUtils';
 
 const CONFETTI_PROPS = {
   // initialVelocityX: 3000,
@@ -25,13 +23,15 @@ function App() {
   const [runConfetti, setRunConfetti] = useState(false);
 
   useEffect(() => {
-    ReactGA.initialize(TRACKING_ID);
-    ReactGA.send({ hitType: "pageview", page: "/", title: "Sababushka Page"})
-  })
+    GAInit();
+    setPageIndex(getPuzzlePageIndex())
+  }, [])
 
-  const handleFinish = (_score: number) => {
+  const handleFinish = (score: number) => {
     // setFinalScore(score);
     // setIsComplete(true);
+
+    GAReportPuzzleComplete(getPuzzleKeyFromOrder(pageIndex), score);
 
     setRunConfetti(true);
     setTimeout(() => {
@@ -46,6 +46,13 @@ function App() {
       newIndex = getPuzzleCount();
 
     setPageIndex(newIndex);
+    setPuzzlePageIndex(newIndex)
+  }
+
+  const shareGame = () => {
+    shareNative(Constants.SHARE_MESSAGE_END).then(success => {
+      GAReportShare(true, success);
+    });
   }
 
   const puzzleConfig: PuzzleConfig = {
@@ -79,13 +86,11 @@ function App() {
     <>
       <div className='puzzle-container'>
         <div className='puzzle-header'>
-          <h1>[סבבושקה]</h1>
+          <h1 className='puzzle-title'>[סבבושקה]</h1>
           <div className='pagination'>
-            <button className='pagination-arrow' onClick={_ => movePage(pageIndex - 1)}>{'<'}</button>
-            {/* {PUZZLES.map((_puzzleKey, i) => {
-            return (<span className={'pagination-dot' + (i === pageIndex ? ' active' : '')}>•</span>);
-          })} */}
-            <button className='pagination-arrow' onClick={_ => movePage(pageIndex + 1)}>{'>'}</button>
+            <button className='pagination-arrow' onClick={() => movePage(pageIndex - 1)}><i className="fa-solid fa-arrow-right"></i></button>
+            <p className='pagination-title'>{pageIndex < getPuzzleCount() ? puzzleConfig.puzzleDisplayName : 'הסוף'}</p>
+            <button className='pagination-arrow' onClick={() => movePage(pageIndex + 1)}><i className="fa-solid fa-arrow-left"></i></button>
           </div>
         </div>
         {(pageIndex < getPuzzleCount()) ? <PuzzleContainer
@@ -97,10 +102,11 @@ function App() {
           <h3>אלו כל השלבים לעת עתה!</h3>
 
           <p>שלבים חדשים יתווספו ממש לפה בקרוב (:</p>
+          <p>אם בא לכם לדווח על באג או סתם לפרגן, <a href="mailto:amir.rave@gmail.com" target='_blank'>תכתבו לנו במייל!</a></p>
           <div className='flex-expand'/>
           <div className='button-group'>
           <p>אהבת את המשחק? שתף עם חברים:</p>
-            <button className='bbutton puzzle-share' onClick={() => shareNative(Constants.SHARE_MESSAGE_END)}>
+            <button className='bbutton puzzle-share' onClick={shareGame}>
               שתף עם חברים 📢
             </button>
           </div>
